@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globo_fitness/data/weather.dart';
 import '../data/http_helper.dart';
 
 class WeatherScreen extends StatefulWidget {
@@ -9,27 +10,64 @@ class WeatherScreen extends StatefulWidget {
 }
 
 class _WeatherScreenState extends State<WeatherScreen> {
-  String result = '';
+  Weather result = Weather('', '', 0, 0, 0, 0);
+  final TextEditingController txtPlace = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Weather'),
-      ),
-      body: Column(children: [
-        ElevatedButton(
-          child: Text('Get Data'),
-          onPressed: getData,
+        appBar: AppBar(
+          title: Text('Weather'),
         ),
-        Text(result),
-      ]),
-    );
+        body: Padding(
+          padding: EdgeInsets.all(16),
+          child: ListView(children: [
+            Padding(
+                padding: EdgeInsets.all(16),
+                child: TextField(
+                    controller: txtPlace,
+                    decoration: InputDecoration(
+                        hintText: 'Enter a city',
+                        suffixIcon: IconButton(
+                            icon: Icon(Icons.search), onPressed: getData)))),
+            weatherRow('Place', result.name),
+            weatherRow('Description', result.description),
+            weatherRow('Temperature', result.temperature.toStringAsFixed(2)),
+            weatherRow('Perceived', result.perceived.toStringAsFixed(2)),
+            weatherRow('Pressure', result.perceived.toString()),
+            weatherRow('Humidity', result.humidity.toString()),
+          ]),
+        ));
   }
 
   Future getData() async {
     HttpHelper helper = HttpHelper();
-    result = await helper.getWeather('London');
+    result = await helper.getWeather(txtPlace.text);
     setState(() {});
+  }
+
+  Widget weatherRow(String label, String value) {
+    Widget row = Padding(
+      padding: EdgeInsets.symmetric(vertical: 16),
+      child: Row(
+        children: [
+          Expanded(
+              flex: 3,
+              child: Text(label,
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Theme.of(context).hintColor,
+                  ))),
+          Expanded(
+              flex: 4,
+              child: Text(value,
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Theme.of(context).primaryColor,
+                  ))),
+        ],
+      ),
+    );
+    return row;
   }
 }
